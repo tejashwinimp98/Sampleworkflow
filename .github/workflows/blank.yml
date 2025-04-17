@@ -28,7 +28,7 @@ jobs:
     - name: Publish
       run: dotnet publish MyApp.csproj -c Release -o MyApplication
     - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: MyApplication
         path: MyApplication/**
