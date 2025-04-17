@@ -1,33 +1,35 @@
-name: dockerloginDEVQA
+name: .NET
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
+    branches: [ main ]
+    
+  # schedule:
+  #   - cron: '30 5 * * 1,3'
+
 jobs:
-  LogintodockerhubDEV:
+  build:
     runs-on: ubuntu-latest
-    environment: Dev
+
     steps:
     - uses: actions/checkout@v3
-    - name: docker login
-      uses: docker/login-action@v2.1.0
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
       with:
-       registry: registry-1.docker.io
-       username: ${{secrets.DOCKERHUBUSERNAME}}
-       password: ${{secrets.DOCKERHUBPASSWORD}}
-  Logintodockerhubtest:
-    runs-on: ubuntu-latest
-    environment: test
-    steps:
-    - uses: actions/checkout@v3
-    - name: docker login
-      uses: docker/login-action@v2.1.0
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+    - name: Publish
+      run: dotnet publish MyApp.csproj -c Release -o MyApplication
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v3
       with:
-       registry: registry-1.docker.io
-       username: ${{secrets.DOCKERHUBUSERNAME}}
-       password: ${{secrets.DOCKERHUBPASSWORD}}
+        name: MyApplication
+        path: MyApplication/**
+        if-no-files-found: error
